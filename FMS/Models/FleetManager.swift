@@ -13,10 +13,16 @@ struct User: Identifiable, Codable {
     var isDriver: Bool
 }
 
+enum VehicleType: String, CaseIterable, Codable {
+    case car = "car"
+    case miniTruck = "miniTruck"
+    case truck = "truck"
+}
+
 struct Vehicle: Identifiable, Codable {
     var id: UUID = UUID()
     let vehicleName: String
-    var vehicleType: String
+    var vehicleType: VehicleType
     var totalTrips: String
     var status: String
 //    var vehicleNumber: String
@@ -25,34 +31,6 @@ struct Vehicle: Identifiable, Codable {
 //    var totalTripsAfterLastMaintenance: Int
 }
 
-//struct Vehicle: Identifiable {
-//    let id = UUID()
-//    let name: String
-//    let type: String
-//    let lastMaintenance: String
-//    let distanceAfterMaintenance: String
-//    let totalTrips: String
-//    let status: String
-//}
-
-//struct Driver: Identifiable, Codable {
-//    var id: String
-//    var name: String
-//    var status: String
-//    var totalTrips: Int
-//    var vehicleType: String
-//    var experienceInYears: Int
-//    var licenseNumber: String
-//    var licenseExpiryDate: Date
-//    var contactNumber: String
-//    var email: String
-//}
-
-enum VehicleType: String, CaseIterable {
-    case car = "car"
-    case miniTruck = "miniTruck"
-    case truck = "truck"
-}
 
 
 //struct Driver: Identifiable {

@@ -12,22 +12,22 @@ struct VehiclesView: View {
     let categories = ["Truck", "Mini Truck", "Car"]
     
     let vehicles: [Vehicle] = [
-        Vehicle(vehicleName: "Tata 407", vehicleType: "Truck", totalTrips: "40", status: "Ready to go!"),
-        Vehicle(vehicleName: "Mahindra Blazo", vehicleType: "Truck", totalTrips: "60", status: "Needs Maintenance"),
-        Vehicle(vehicleName: "BharatBenz 3123", vehicleType: "Truck", totalTrips: "90", status: "Maintenance"),
+        Vehicle(vehicleName: "Tata 407", vehicleType: .truck, totalTrips: "40", status: "Ready to go!"),
+        Vehicle(vehicleName: "Mahindra Blazo", vehicleType: .truck, totalTrips: "60", status: "Needs Maintenance"),
+        Vehicle(vehicleName: "BharatBenz 3123", vehicleType: .truck, totalTrips: "90", status: "Maintenance"),
         
-        Vehicle(vehicleName: "Maruti Swift", vehicleType: "Car", totalTrips: "20", status: "Ready to go!"),
-        Vehicle(vehicleName: "Hyundai Creta", vehicleType: "Car", totalTrips: "35", status: "Needs Maintenance"),
-        Vehicle(vehicleName: "Tata Harrier", vehicleType: "Car", totalTrips: "50", status: "Maintenance"),
+        Vehicle(vehicleName: "Maruti Swift", vehicleType: .car, totalTrips: "20", status: "Ready to go!"),
+        Vehicle(vehicleName: "Hyundai Creta", vehicleType: .car, totalTrips: "35", status: "Needs Maintenance"),
+        Vehicle(vehicleName: "Tata Harrier", vehicleType: .car, totalTrips: "50", status: "Maintenance"),
         
-        Vehicle(vehicleName: "Volvo 9400", vehicleType: "Bus", totalTrips: "60", status: "Ready to go!"),
-        Vehicle(vehicleName: "Ashok Leyland", vehicleType: "Bus", totalTrips: "80", status: "Needs Maintenance"),
-        Vehicle(vehicleName: "Mercedes-Benz Tourismo", vehicleType: "Bus", totalTrips: "100", status: "Maintenance")
+        Vehicle(vehicleName: "Volvo 9400", vehicleType: .miniTruck, totalTrips: "60", status: "Ready to go!"),
+        Vehicle(vehicleName: "Ashok Leyland", vehicleType: .miniTruck, totalTrips: "80", status: "Needs Maintenance"),
+        Vehicle(vehicleName: "Mercedes-Benz Tourismo", vehicleType: .miniTruck, totalTrips: "100", status: "Maintenance")
     ]
 
     
     var filteredVehicles: [Vehicle] {
-        vehicles.filter { $0.vehicleType == selectedCategory }
+        vehicles.filter { $0.vehicleType.rawValue == selectedCategory }
     }
     
     var body: some View {
