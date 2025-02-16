@@ -1,12 +1,6 @@
-//
-//  TripDetailView.swift
-//  create new trips
-//
-//  Created by Vanshika on 14/02/25.
-//
 import SwiftUI
 
-struct TripDetailView: View {
+struct AddEditTripView: View {
     @ObservedObject var viewModel: TripViewModel
     @Environment(\.presentationMode) var presentationMode
     @State private var trip: Trip
@@ -45,7 +39,7 @@ struct TripDetailView: View {
                 TextField("Driver Name", text: $trip.driver)
             }
         }
-        .navigationTitle(trip.id == UUID() ? "New Trip" : "Edit Trip")
+        .navigationTitle(viewModel.trips.contains(where: { $0.id == trip.id }) ? "Edit Trip" : "New Trip")
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") {
@@ -64,5 +58,11 @@ struct TripDetailView: View {
                 .disabled(!isFormValid)
             }
         }
+    }
+}
+
+struct AddEditTripView_Previews: PreviewProvider {
+    static var previews: some View {
+        AddEditTripView(viewModel: TripViewModel(), trip: nil)
     }
 }

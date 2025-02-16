@@ -37,7 +37,7 @@ struct StatsCard: View {
                 .foregroundColor(.gray)
         }
         .padding()
-        .frame(maxWidth: 160, maxHeight: 120, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: 120, alignment: .leading)
         .background(Color.white)
         .cornerRadius(10)
         .shadow(radius: 5)

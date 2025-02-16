@@ -2,18 +2,24 @@ import SwiftUI
 
 struct FleetManagerDashboard: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack(spacing: 20) {
-                StatsCard(icon: "car.2.fill", value: "30", label: "Total Vehicles")
-                StatsCard(icon: "person.2.fill", value: "25", label: "Total Drivers")
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .center, spacing: 20) {
+                    HStack(spacing: 20) {
+                        StatsCard(icon: "car.2.fill", value: "30", label: "Total Vehicles")
+                        StatsCard(icon: "person.2.fill", value: "25", label: "Total Drivers")
+                    }
+                    
+                    TripManagementCard_Fleet()
+                    
+                    ActiveTripsView(trips: sampleTrips)
+                }
+                .navigationTitle("Fleet")
+                .padding(.horizontal)
+                
+                //        .background(Color(UIColor.systemGroupedBackground))
             }
-            
-            TripManagementCard_Fleet()
-            
-            ActiveTripsView(trips: sampleTrips)
         }
-        .padding(.horizontal)
-//        .background(Color(UIColor.systemGroupedBackground))
     }
 }
 
@@ -82,7 +88,7 @@ struct ActiveTripsView: View {
                         .bold()
                     Image(systemName: "chevron.right")
                         .foregroundColor(.gray)
-
+                    
                 }
             }
             
@@ -109,7 +115,7 @@ struct ActiveTripsView: View {
             .background(Color.gray.opacity(0.2)) // Light gray background
             .cornerRadius(10) // Rounded corners
             .padding(.top, 5)
-
+            
         }
         .padding()
         .background(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.2)))

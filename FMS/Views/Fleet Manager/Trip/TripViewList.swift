@@ -1,10 +1,3 @@
-//
-//  TripViewList.swift
-//  create new trips
-//
-//  Created by Vanshika on 14/02/25.
-//
-
 import SwiftUI
 
 struct TripListView: View {
@@ -14,7 +7,7 @@ struct TripListView: View {
     
     var body: some View {
         NavigationView {
-            List {
+            Form {
                 ForEach(viewModel.trips) { trip in
                     Button(action: {
                         editingTrip = trip
@@ -37,12 +30,12 @@ struct TripListView: View {
             }
             .sheet(isPresented: $showingAddTrip) {
                 NavigationView {
-                    TripDetailView(viewModel: viewModel, trip: nil)
+                    AddEditTripView(viewModel: viewModel, trip: nil)
                 }
             }
             .sheet(item: $editingTrip) { trip in
                 NavigationView {
-                    TripDetailView(viewModel: viewModel, trip: trip)
+                    AddEditTripView(viewModel: viewModel, trip: trip)
                 }
             }
         }
