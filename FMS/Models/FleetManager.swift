@@ -21,14 +21,16 @@ enum VehicleType: String, CaseIterable, Codable {
 
 struct Vehicle: Identifiable, Codable {
     var id: UUID = UUID()
-    let vehicleName: String
+    var vehicleName: String
+    var year: Int
     var vehicleType: VehicleType
     var totalTrips: String
     var status: String
-//    var vehicleNumber: String
-//    var lastMaintenanceDate: Date
-//    var distanceAfterMaintenance: Double
-//    var totalTripsAfterLastMaintenance: Int
+    var vin: String
+    var rcExpiryDate: Date
+    var pollutionExpiryDate: Date
+    var insuranceExpiryDate: Date
+    var permitExpiryDate: Date
 }
 
 

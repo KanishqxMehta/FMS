@@ -9,9 +9,11 @@ import SwiftUI
 
 
 // MARK: - Add Vehicle View
-struct AddVehicleView: View {
+struct AddEditVehicleView: View {
     @EnvironmentObject var vehicleViewModel: VehicleViewModel
     @Environment(\.presentationMode) var presentationMode
+    
+    var vehicle: Vehicle?  // Optional vehicle for editing
     
     @State private var model = ""
     @State private var vin = ""
@@ -21,12 +23,24 @@ struct AddVehicleView: View {
     @State private var pollutionExpiryDate = Date()
     @State private var insuranceExpiryDate = Date()
     @State private var permitExpiryDate = Date()
+
+    init(vehicle: Vehicle? = nil) {
+        self.vehicle = vehicle
+        _model = State(initialValue: vehicle?.vehicleName ?? "")
+        _vin = State(initialValue: vehicle?.vin ?? "")
+        _type = State(initialValue: vehicle?.vehicleType ?? .car)
+        _manufactureYear = State(initialValue: vehicle?.year ?? Calendar.current.component(.year, from: Date()))
+        _rcExpiryDate = State(initialValue: vehicle?.rcExpiryDate ?? Date())
+        _pollutionExpiryDate = State(initialValue: vehicle?.pollutionExpiryDate ?? Date())
+        _insuranceExpiryDate = State(initialValue: vehicle?.insuranceExpiryDate ?? Date())
+        _permitExpiryDate = State(initialValue: vehicle?.permitExpiryDate ?? Date())
+    }
     
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("INFORMATION").bold().foregroundColor(.gray)) {
-                    TextField("Enter driver's name", text: $model)
+                    TextField("Enter Vehicle's name", text: $model)
                     TextField("Enter identification number", text: $vin)
                     Picker("Select Vehicle Type", selection: $type) {
                         ForEach(VehicleType.allCases, id: \.self) { type in
@@ -43,20 +57,33 @@ struct AddVehicleView: View {
                     DatePicker("Permit's Expiry Date", selection: $permitExpiryDate, displayedComponents: .date)
                 }
             }
-            .navigationBarTitle("Add new Vehicle", displayMode: .inline)
-            .navigationBarItems(leading: Button("Vehicles") { presentationMode.wrappedValue.dismiss() },
+            .navigationBarTitle(vehicle == nil ? "Add new Vehicle" : "Edit Vehicle", displayMode: .inline)
+            .navigationBarItems(leading: Button("Cancel") { presentationMode.wrappedValue.dismiss() },
                                 trailing: Button("Save") { saveVehicle() })
         }
     }
     
     func saveVehicle() {
         let newVehicle = Vehicle(
-            vehicleName: "Tata Ultra",
-            vehicleType: .car,
-            totalTrips: "120",
-            status: "Active"
+            id: vehicle?.id ?? UUID(),
+            vehicleName: model,
+            year: manufactureYear,
+            vehicleType: type,
+            totalTrips: vehicle?.totalTrips ?? "0",
+            status: vehicle?.status ?? "Available",
+            vin: vin,
+            rcExpiryDate: rcExpiryDate,
+            pollutionExpiryDate: pollutionExpiryDate,
+            insuranceExpiryDate: insuranceExpiryDate,
+            permitExpiryDate: permitExpiryDate
         )
-        vehicleViewModel.addVehicle(newVehicle)
+        
+        if let existingVehicle = vehicle {
+            vehicleViewModel.updateVehicle(newVehicle)  // Update
+        } else {
+            vehicleViewModel.addVehicle(newVehicle)  // Add new
+        }
+        
         presentationMode.wrappedValue.dismiss()
     }
 }
@@ -64,6 +91,6 @@ struct AddVehicleView: View {
 // MARK: - Preview
 struct AddVehicleView_Previews: PreviewProvider {
     static var previews: some View {
-        AddVehicleView().environmentObject(VehicleViewModel())
+        AddEditVehicleView().environmentObject(VehicleViewModel())
     }
 }

@@ -24,7 +24,7 @@ struct MainTabView: View {
                     Text("Drivers")
                 }
             
-            VehicleView()
+            VehicleListView()
                 .tabItem {
                     Image(systemName: "car.fill")
                     Text("Vehicles")
