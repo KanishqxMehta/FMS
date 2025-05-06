@@ -9,61 +9,90 @@
 import SwiftUI
 
 struct MainTabView: View {
-    var body: some View {
-        TabView {
-            FleetManagerDashboard()
+    var body: some View { // ✅ Wrap TabView inside NavigationStack
+            TabView {
+                FleetManagerDashboard()
+                    .tabItem {
+                        Image(systemName: "house.fill")
+                        Text("Home")
+                    }
+//                    .navigationBarBackButtonHidden(true)
 
-                .tabItem {
-                    Image(systemName: "house.fill")
-                    Text("Home")
-                }
-            
-            DriverListView()
-                .tabItem {
-                    Image(systemName: "person.fill")
-                    Text("Drivers")
-                }
-            
-            VehicleListView()
-                .tabItem {
-                    Image(systemName: "car.fill")
-                    Text("Vehicles")
-                }
-            
-            TripListView()
-                .tabItem {
-                    Image(systemName: "map.fill")
-                    Text("Trips")
-                }
+                DriverListView()
+                    .tabItem {
+                        Image(systemName: "person.fill")
+                        Text("Drivers")
+                    }
+
+                VehicleListView()
+                    .tabItem {
+                        Image(systemName: "car.fill")
+                        Text("Vehicles")
+                    }
+
+                TripListView()
+                    .tabItem {
+                        Image(systemName: "map.fill")
+                        Text("Trips")
+                    }
+                
+                SettingView()
+                    .tabItem {
+                        Image(systemName: "gear")
+                        Text("Settings")
+                    }
+            }
+            .accentColor(.black)
+            .navigationBarTitleDisplayMode(.inline) // ✅ Ensure title shows
+            .toolbar(.visible, for: .navigationBar)
+            .navigationBarBackButtonHidden(true) // Hide back button
         }
-        .accentColor(.black) // Set active tab color
-    }
 }
+
 
 // Sample Views for other tabs (Replace with actual content)
-struct DriverView: View {
+struct SettingView: View {
+    @Environment(\.presentationMode) var presentationMode
+    
     var body: some View {
-        Text("Driver Management Screen")
-            .font(.title)
-            .bold()
+        NavigationStack {
+            VStack {
+                Spacer()
+                
+                NavigationLink{
+                    MaintenanceRequest()
+                }label: {
+                    Text("Maintance Request")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(.black)
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                }
+                
+                Button(action: {
+                    // Dismiss the MainTabView
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("Logout")
+                        .font(.headline)
+                        .foregroundColor(.red)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(.black)
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                }
+                
+                Spacer()
+            }
+            .navigationTitle("Settings")
+        }
     }
 }
 
-struct VehicleView: View {
-    var body: some View {
-        Text("Vehicle Management Screen")
-            .font(.title)
-            .bold()
-    }
-}
-
-struct TripView: View {
-    var body: some View {
-        Text("Trip Management Screen")
-            .font(.title)
-            .bold()
-    }
-}
 
 // **Preview**
 struct MainTabView_Previews: PreviewProvider {

@@ -4,10 +4,12 @@ struct FleetManagerLoginView: View {
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var showPassword: Bool = false
-    @State private var isLoggedIn: Bool = false // State to track login status
+    @State private var isLoggedIn: Bool = false
+    @State private var errorMessage: String?
+    @StateObject private var authViewModel = AuthViewModel()
 
     var body: some View {
-        NavigationView {
+//        NavigationView {
             ZStack {
                 // Background Gradient
                 LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.1), Color.white]),
@@ -15,26 +17,34 @@ struct FleetManagerLoginView: View {
                                endPoint: .bottomTrailing)
                     .edgesIgnoringSafeArea(.all)
 
-                VStack(spacing: 15) { // Reduced spacing for a compact layout
-                    // Fleet Management Logo with Gradient Effect
-                    Image(systemName: "car.2.fill")
+                VStack(spacing: 15) {
+                    // Fleet Management Logo
+                    Image(systemName: "briefcase.fill")
                         .resizable()
                         .scaledToFit()
-                        .frame(height: 60)
+                        .frame(height: 70)
                         .foregroundColor(.black)
 
-                    Text("Sign In to Fleet Management")
+                    Text("Sign In as Fleet Manager")
                         .font(.title3)
                         .fontWeight(.semibold)
 
+                    // Show Error Message if Login Fails
+                    if let error = errorMessage {
+                        Text(error)
+                            .foregroundColor(.red)
+                            .font(.caption)
+                    }
+
                     // Email Input
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Username")
+                        Text("Email")
                             .font(.headline)
                         HStack {
-                            TextField("Enter your username", text: $email)
+                            TextField("Enter your email", text: $email)
                                 .autocapitalization(.none)
                                 .padding()
+                                .keyboardType(.emailAddress)
                             Image(systemName: "envelope.fill")
                                 .foregroundColor(.gray)
                                 .padding(.trailing, 10)
@@ -68,36 +78,45 @@ struct FleetManagerLoginView: View {
                     }
                     .padding(.horizontal, 30)
 
-                    // Sign In Button with NavigationLink
-                    NavigationLink(destination: FleetManagerDashboard(), isActive: $isLoggedIn) {
-                        Button(action: {
-                            authenticateUser()
-                        }) {
-                            Text("Sign In")
-                                .fontWeight(.bold)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(.black)
-                                .foregroundColor(.white)
-                                .cornerRadius(25)
-                                .shadow(color: .blue.opacity(0.3), radius: 5, x: 0, y: 3)
-                        }
+                    // Sign In Button (Disabled when email or password is empty)
+                    Button(action: {
+                        authenticateUser()
+                    }) {
+                        Text("Sign In")
+                            .fontWeight(.bold)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background((email.isEmpty || password.isEmpty) ? Color.gray : Color.black)
+                            .foregroundColor(.white)
+                            .cornerRadius(25)
+                            .shadow(color: .blue.opacity(0.3), radius: 5, x: 0, y: 3)
                     }
+                    .disabled(email.isEmpty || password.isEmpty) // ✅ Disable button when fields are empty
                     .padding(.horizontal, 30)
                     .padding(.top, 5)
+
+                    // Navigation Triggered Only After Login Success
+                    NavigationLink(destination: MainTabView(), isActive: $isLoggedIn) {
+                        EmptyView()
+                    }
+                    .hidden()
                 }
             }
-        }
+//        }
     }
 
     func authenticateUser() {
-        // Simulate authentication
-        print("Logging in...")
-        isLoggedIn = true // Set the flag to true to trigger the navigation
+        authViewModel.signIn(email: email, password: password, selectedRole: "fleetManager") { success, error in
+            if success {
+                isLoggedIn = true // ✅ Navigate only when login succeeds
+            } else {
+                errorMessage = error
+            }
+        }
     }
 }
 
-
+// Preview
 struct FleetManagerLoginView_Previews: PreviewProvider {
     static var previews: some View {
         FleetManagerLoginView()

@@ -1,12 +1,29 @@
+//
+//  DriverListView.swift
+//  FMS
+//
+//  Created by Vanshika on 21/02/25.
+//
 import SwiftUI
+import Firebase
 
 struct DriverListView: View {
     @StateObject private var viewModel = DriverViewModel()
     @State private var showingAddDriver = false
     @State private var selectedDriver: Driver? = nil
+    @State private var showDeleteConfirmation = false
+    @State private var driverToDelete: Driver? = nil
+
+    var availableDriversCount: Int {
+        viewModel.drivers.filter { $0.driverStatus == .available }.count
+    }
+
+    var unavailableDriversCount: Int {
+        viewModel.drivers.filter { $0.driverStatus == .unavailable }.count
+    }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(alignment: .leading) {
                 Text("Drivers")
                     .font(.largeTitle)
@@ -15,53 +32,74 @@ struct DriverListView: View {
                     .padding(.top, 10)
 
                 HStack(spacing: 15) {
-                    DriverStatusView(title: "Available", count: viewModel.drivers.count)
-                    DriverStatusView(title: "On Leave", count: 5)
+                    DriverStatusView(title: "Available", count: availableDriversCount)
+                    DriverStatusView(title: "Unavailable", count: unavailableDriversCount)
                 }
                 .padding(.horizontal)
 
-                ScrollView {
-                    VStack(spacing: 10) {
-                        ForEach(viewModel.drivers) { driver in
+                if viewModel.drivers.isEmpty {
+                    VStack {
+                        Text("No drivers available.")
+                            .font(.headline)
+                            .foregroundColor(.gray)
+                            .padding(.top, 20)
+                    }
+                } else {
+                    List(viewModel.drivers) { driver in
+                        NavigationLink(destination: DriverDetailsView(selectedDriver: driver)) {
                             DriverCardView(driver: driver)
-                                .onTapGesture {
-                                    // Create a copy of the driver to prevent reference issues
-                                    selectedDriver = driver
-                                    showingAddDriver = true
-                                }
+                        }
+                        .swipeActions {
+                            Button(role: .destructive) {
+                                driverToDelete = driver
+                                showDeleteConfirmation = true
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         }
                     }
-                    .padding()
+                    .listStyle(PlainListStyle())
                 }
 
                 Spacer()
             }
             .toolbar {
-                Button(action: {
-                    selectedDriver = nil
-                    showingAddDriver = true
-                }) {
-                    Image(systemName: "plus")
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        selectedDriver = nil
+                        showingAddDriver = true
+                    }) {
+                        Image(systemName: "plus")
+                            .font(.title2)
+                    }
                 }
             }
             .sheet(isPresented: $showingAddDriver) {
-                NavigationView {
-                    if showingAddDriver {  // Add this safety check
-                        AddEditDriverView(
-                            viewModel: viewModel,
-                            driver: selectedDriver
-                        )
-                    }
-                }
+                AddEditDriverView(viewModel: viewModel, driver: nil) // ✅ Creating a new driver
+            }
+            .onAppear {
+                viewModel.fetchDrivers()
+            }
+            .alert(isPresented: $showDeleteConfirmation) {
+                Alert(
+                    title: Text("Delete Driver"),
+                    message: Text("Are you sure you want to delete this driver?"),
+                    primaryButton: .destructive(Text("Delete")) {
+                        if let driver = driverToDelete {
+                            viewModel.deleteDriver(driver)
+                        }
+                    },
+                    secondaryButton: .cancel()
+                )
             }
         }
     }
 }
 
-struct DriversView_Previews: PreviewProvider {
+// MARK: - Preview
+struct DriverListView_Previews: PreviewProvider {
     static var previews: some View {
         DriverListView()
     }
-    
 }
 

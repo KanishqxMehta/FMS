@@ -3,47 +3,44 @@ import SwiftUI
 struct TripListView: View {
     @StateObject var viewModel = TripViewModel()
     @State private var showingAddTrip = false
-    @State private var editingTrip: Trip? = nil
     
     var body: some View {
         NavigationView {
-            Form {
-                ForEach(viewModel.trips) { trip in
-                    Button(action: {
-                        editingTrip = trip
-                    }) {
-                        VStack(alignment: .leading) {
-                            Text("\(trip.startLocation) to \(trip.endLocation)")
-                                .font(.headline)
-                            Text("Driver: \(trip.driver)")
-                                .font(.subheadline)
+            ScrollView {
+                VStack(spacing: 16) { // Adds spacing between cards
+                    ForEach(viewModel.trips) { trip in
+                        NavigationLink(destination: TripDetailsView(trip: trip)) {
+                            TripCardView(trip: trip)
+                                .padding(.horizontal)
                         }
+                        .buttonStyle(PlainButtonStyle()) // Removes default navigation button style
                     }
                 }
-                .onDelete(perform: viewModel.removeTrip)
+                .padding(.top)
             }
             .navigationTitle("Trips")
             .toolbar {
-                Button(action: { showingAddTrip = true }) {
-                    Image(systemName: "plus")
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showingAddTrip = true
+                    }) {
+                        Image(systemName: "plus")
+                            .font(.title2)
+                    }
                 }
             }
             .sheet(isPresented: $showingAddTrip) {
-                NavigationView {
-                    AddEditTripView(viewModel: viewModel, trip: nil)
-                }
+                AddEditTripView(tripViewModel: viewModel, trip: nil)
             }
-            .sheet(item: $editingTrip) { trip in
-                NavigationView {
-                    AddEditTripView(viewModel: viewModel, trip: trip)
-                }
+            .onAppear {
+                viewModel.fetchTrips()
             }
         }
     }
 }
 
-
-struct TripListView_Preview: PreviewProvider {
+// MARK: - Preview
+struct TripListView_Previews: PreviewProvider {
     static var previews: some View {
         TripListView()
     }

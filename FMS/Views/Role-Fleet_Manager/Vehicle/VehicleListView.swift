@@ -1,52 +1,76 @@
 import SwiftUI
 
-import SwiftUI
-
 struct VehicleListView: View {
-    @State private var vehicles: [Vehicle] = [
-        Vehicle(vehicleName: "Toyota Corolla", year: 2022, vehicleType: .car, totalTrips: "15", status: "Available", vin: "1HGCM82633A123456",
-                rcExpiryDate: Date(), pollutionExpiryDate: Date(), insuranceExpiryDate: Date(), permitExpiryDate: Date()),
-        Vehicle(vehicleName: "Ford F-150", year: 2020, vehicleType: .truck, totalTrips: "22", status: "On Trip", vin: "1FTFW1E55LKD12345",
-                rcExpiryDate: Date(), pollutionExpiryDate: Date(), insuranceExpiryDate: Date(), permitExpiryDate: Date())
-    ]
-    
+    @StateObject private var vehicleViewModel = VehicleViewModel()
     @State private var showAddEditVehicle = false
     @State private var selectedVehicle: Vehicle?
-
+    @State private var showingDeleteAlert = false
+    @State private var vehicleToDelete: Vehicle?
+    
+    var availableCount: Int {
+      vehicleViewModel.vehicles.filter { $0.status == .available }.count
+    }
+    
+    var unavailableCount: Int {
+      vehicleViewModel.vehicles.filter { $0.status != .available }.count
+    }
+    
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 15) {
-                    ForEach(vehicles) { vehicle in
-                        VehicleCard(vehicle: vehicle)
-                            .onTapGesture {
-                                selectedVehicle = vehicle
-                                showAddEditVehicle = true
+        NavigationStack {
+            VStack{
+                HStack {
+                    StatusCard(title: "Available", count: availableCount)
+                    StatusCard(title: "Unavailable", count: unavailableCount)
+                }.padding(20)
+                
+                List {
+                    ForEach(vehicleViewModel.vehicles, id: \ .id) { vehicle in
+                        NavigationLink(destination: VehicleDetailsView(vehicle: vehicle, showEditVehicle: $showAddEditVehicle, selectedVehicle: $selectedVehicle)) {
+                            VehicleCard(vehicle: vehicle)
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                vehicleToDelete = vehicle
+                                showingDeleteAlert = true
+                            } label: {
+                                Label("Delete", systemImage: "trash")
                             }
-                            .padding(.horizontal)
+                        }
                     }
                 }
-                .padding(.top)
             }
             .navigationTitle("Vehicles")
-            .navigationBarItems(trailing: Button(action: {
-                selectedVehicle = nil
-                showAddEditVehicle = true
-            }) {
-                Image(systemName: "plus")
-            })
+            .navigationBarItems(
+                trailing: Button(action: {
+                    selectedVehicle = nil
+                    showAddEditVehicle = true
+                }) {
+                    Image(systemName: "plus")
+                }
+            )
             .sheet(isPresented: $showAddEditVehicle) {
                 AddEditVehicleView(vehicle: selectedVehicle)
+                    .environmentObject(vehicleViewModel)
+            }
+            .alert("Are you sure you want to delete this vehicle?", isPresented: $showingDeleteAlert) {
+                Button("Cancel", role: .cancel) {}
+                Button("Delete", role: .destructive) {
+                    if let vehicle = vehicleToDelete {
+                        vehicleViewModel.deleteVehicle(vehicle)
+                    }
+                }
             }
         }
     }
 }
 
 
+
 // MARK: - Vehicle Card View
 struct VehicleCard: View {
     var vehicle: Vehicle
-
+    @EnvironmentObject var vehicleViewModel: VehicleViewModel // Add environment object
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -63,13 +87,13 @@ struct VehicleCard: View {
                 
                 Spacer()
                 
-                Text(vehicle.status)
+              Text(vehicle.status.rawValue)
                     .font(.footnote)
                     .fontWeight(.semibold)
                     .padding(.vertical, 6)
                     .padding(.horizontal, 12)
-                    .background(Color.green.opacity(0.2))
-                    .foregroundColor(.green)
+                    .background(vehicle.status == .available ? Color.green.opacity(0.2) : Color.red.opacity(0.2))
+                    .foregroundColor(vehicle.status == .available ? .green : .red)
                     .cornerRadius(10)
             }
             
@@ -98,11 +122,25 @@ struct VehicleCard: View {
                 .background(Color.white)
                 .cornerRadius(12)
         )
-        .padding(.horizontal)
+    }
+}
+struct StatusCard: View {
+    var title: String
+    var count: Int
+    
+    var body: some View {
+        VStack {
+            Text(title)
+                .font(.headline)
+            Text("\(count)")
+                .font(.largeTitle)
+                .bold()
+        }
+        .frame(maxWidth: .infinity, minHeight: 80)
+        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.black, lineWidth: 1))
     }
 }
 
-// MARK: - AddEditVehicleView
 struct VehicleListView_Previews: PreviewProvider {
     static var previews: some View {
         VehicleListView()

@@ -1,29 +1,40 @@
 import SwiftUI
 
 struct FleetManagerDashboard: View {
+    
+    @StateObject private var vehicleViewModel = VehicleViewModel()  // ✅ Use instance
+        @StateObject private var driverViewModel = DriverViewModel()
+    @StateObject private var tripViewModel = TripViewModel()
+    
     var body: some View {
-        NavigationView {
+        NavigationView{
             ScrollView {
                 VStack(alignment: .center, spacing: 20) {
                     HStack(spacing: 20) {
-                        StatsCard(icon: "car.2.fill", value: "30", label: "Total Vehicles")
-                        StatsCard(icon: "person.2.fill", value: "25", label: "Total Drivers")
+                        StatsCard(icon: "car.2.fill", value: "\(vehicleViewModel.vehicles.count)", label: "Total Vehicles")
+                        StatsCard(icon: "person.2.fill", value: "\(driverViewModel.drivers.count)", label: "Total Drivers")
                     }
                     
                     TripManagementCard_Fleet()
                     
-                    ActiveTripsView(trips: sampleTrips)
+                    ActiveTripsView(trips: tripViewModel.activeTrips)
                 }
-                .navigationTitle("Fleet")
+                .navigationTitle("Fleet") // ✅ Now title will show
                 .padding(.horizontal)
-                
-                //        .background(Color(UIColor.systemGroupedBackground))
+                .onAppear {
+                                    vehicleViewModel.fetchVehicles()   // ✅ Fetch latest vehicle count
+                                    driverViewModel.fetchDrivers()     // ✅ Fetch latest driver count
+                                }
             }
         }
+        .navigationBarBackButtonHidden(true)
     }
 }
 
 struct TripManagementCard_Fleet: View {
+    @State private var isPresented = false
+    @StateObject var viewModel = TripViewModel()
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top) {
@@ -42,7 +53,9 @@ struct TripManagementCard_Fleet: View {
             
             Spacer()
             
-            Button(action: { /* Create new trip action */ }) {
+            Button(action: {
+                isPresented.toggle()
+            }) {
                 HStack {
                     Image(systemName: "plus")
                         .font(.title2)
@@ -56,12 +69,15 @@ struct TripManagementCard_Fleet: View {
                 .background(.black)
                 .cornerRadius(10)
             }
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: 150, alignment: .leading)
+            .background(Color.white)
+            .cornerRadius(12)
+            .shadow(radius: 3)
         }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: 150,alignment: .leading)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(radius: 3)
+        .sheet(isPresented: $isPresented) {
+          AddEditTripView(tripViewModel: viewModel, trip: nil)
+        }
     }
 }
 
@@ -84,18 +100,17 @@ struct ActiveTripsView: View {
                 Spacer()
                 
                 HStack {
-                    Text("\(max(trips.count, 3))")  // Ensure only max 3 trips count is displayed
+                    Text("\(trips.count)")  // Display total number of active trips
                         .bold()
                     Image(systemName: "chevron.right")
                         .foregroundColor(.gray)
-                    
                 }
             }
             
             // TabView restricted to max 3 trips
             TabView(selection: $currentIndex) {
                 ForEach(0..<min(trips.count, 3), id: \.self) { index in
-                    TripCardView(trip: trips[index])
+                    TripCardView(trip: trips[index]) // ✅ Use TripCardView
                         .tag(index)
                 }
             }
@@ -113,9 +128,8 @@ struct ActiveTripsView: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .background(Color.gray.opacity(0.2)) // Light gray background
-            .cornerRadius(10) // Rounded corners
+            .cornerRadius(10)
             .padding(.top, 5)
-            
         }
         .padding()
         .background(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.2)))

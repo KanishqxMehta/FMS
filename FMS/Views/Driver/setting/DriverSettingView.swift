@@ -1,8 +1,19 @@
 import SwiftUI
 
 struct DriverSettingView: View {
-    @State private var isAvailable: Bool = false
+    @State private var isAvailable: Bool = true // ✅ Default to Available
+    @State private var showingAlert: Bool = false
+    @State private var pendingAvailabilityChange: Bool?
+    @State private var totalDistanceTraveled: Double = 0.0
+    
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject var viewModel: DriverViewModel
+    @State private var driverName: String
+   
+    init(viewModel: DriverViewModel, driverName: String) {
+        self.viewModel = viewModel
+        _driverName = State(initialValue: driverName)
+    }
 
     var body: some View {
         NavigationStack {
@@ -17,8 +28,9 @@ struct DriverSettingView: View {
                     HStack {
                         Image(systemName: "person.fill")
                             .foregroundColor(.black)
-                        Text("Erica Sinclair")
+                        Text(driverName.isEmpty ? (viewModel.driver?.name ?? "Naman") : driverName)
                             .foregroundColor(.black)
+                            .bold()
                         Spacer()
                         Image(systemName: "chevron.right")
                             .foregroundColor(.gray)
@@ -38,11 +50,15 @@ struct DriverSettingView: View {
                     HStack {
                         Image(systemName: "person.fill")
                             .foregroundColor(.black)
-                        Text("Availability")
+                        Text("Available for Trips")
                             .foregroundColor(.black)
                         Spacer()
                         Toggle("", isOn: $isAvailable)
                             .labelsHidden()
+                            .onChange(of: isAvailable) { newValue in
+                                pendingAvailabilityChange = newValue
+                                showingAlert = true
+                            }
                     }
                     .padding()
                     .background(Color(.systemGray6))
@@ -59,10 +75,11 @@ struct DriverSettingView: View {
                     HStack {
                         Image(systemName: "wallet.pass.fill")
                             .foregroundColor(.black)
-                        Text("Wallet")
+                        Text("Earnings")
                             .foregroundColor(.black)
                         Spacer()
-                        Text("569 $")
+//                        fetchTotalDistanceTraveled()
+                        Text("$ \(totalDistanceTraveled, specifier: "%.2f")")
                             .fontWeight(.bold)
                     }
                     .padding()
@@ -75,8 +92,7 @@ struct DriverSettingView: View {
                 
                 // MARK: - Logout Button
                 Button(action: {
-                    // Clear the navigation stack to go back to RoleSelectionView
-                    dismiss()
+                    resetAppToRoot()
                 }) {
                     Text("Logout")
                         .foregroundColor(.red)
@@ -90,19 +106,62 @@ struct DriverSettingView: View {
             }
             .padding()
             .background(Color(.systemGray6))
-            .navigationTitle("Setting")
+            .navigationTitle("Settings")
+            .onAppear {
+                if driverName.isEmpty {
+                    viewModel.loadCurrentDriver()
+                    driverName = viewModel.driver?.name ?? "Naman"
+                }
+                
+                if let driverStatus = viewModel.driver?.driverStatus {
+                    isAvailable = driverStatus == .available
+                }
+                
+                fetchTotalDistanceTraveled()
+            }
+            .alert("Change Availability?", isPresented: $showingAlert) {
+                Button("Cancel", role: .cancel) {
+                    if let pendingChange = pendingAvailabilityChange {
+                        isAvailable = !pendingChange // Revert toggle change
+                    }
+                }
+                Button("Confirm") {
+                    if let pendingChange = pendingAvailabilityChange {
+                        updateAvailability(pendingChange)
+                    }
+                }
+            } message: {
+                Text("Are you sure you want to change your availability?")
+            }
+        }
+    }
+    
+    func resetAppToRoot() {
+        guard let window = UIApplication.shared.windows.first else { return }
+        window.rootViewController = UIHostingController(rootView: RoleSelectionView())
+        window.makeKeyAndVisible()
+    }
+
+    func updateAvailability(_ isAvailable: Bool) {
+        viewModel.updateAvailability(isAvailable: isAvailable)
+    }
+    
+    func fetchTotalDistanceTraveled() {
+        FirestoreService.shared.fetchCompletedTrips { trips in
+            DispatchQueue.main.async {
+                self.totalDistanceTraveled = trips.reduce(0) { total, trip in
+                    if let distance = Double(trip.distance) {
+                        return total + distance
+                    } else {
+                        print("⚠️ Invalid distance value for trip: \(trip.distance)")
+                        return total
+                    }
+                }
+            }
         }
     }
 }
-//
-//struct DriverSettingView_PreviewWrapper: View {
-//    @State private var navigationPath = NavigationPath()
-//
-//    var body: some View {
-//        DriverSettingView()
-//    }
-//}
 
 #Preview {
-    DriverSettingView()
+    DriverSettingView(viewModel: DriverViewModel(), driverName: "Naman")
 }

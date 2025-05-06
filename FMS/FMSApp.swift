@@ -6,9 +6,14 @@
 //
 
 import SwiftUI
+import Firebase
 
 @main
 struct FMSApp: App {
+    @StateObject var authViewModel = AuthViewModel()
+    init(){
+        FirebaseApp.configure()
+    }
     var body: some Scene {
         WindowGroup {
             RoleSelectionView()

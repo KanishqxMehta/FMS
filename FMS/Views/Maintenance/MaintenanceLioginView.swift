@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct DriverLoginView: View {
+struct MaintenanceLoginView: View {
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var showPassword: Bool = false
@@ -17,17 +17,16 @@ struct DriverLoginView: View {
                     .edgesIgnoringSafeArea(.all)
 
                 VStack(spacing: 15) {
-                    Image(systemName: "car.2.fill")
+                    Image(systemName: "wrench.and.screwdriver.fill")
                         .resizable()
                         .scaledToFit()
-                        .frame(height: 60)
+                        .frame(height: 90)
                         .foregroundColor(.black)
 
-                    Text("Sign In as Driver")
+                    Text("Sign In as Maintenance Worker")
                         .font(.title3)
                         .fontWeight(.semibold)
 
-                    // Show Error Message if Login Fails
                     if let error = errorMessage {
                         Text(error)
                             .foregroundColor(.red)
@@ -36,8 +35,7 @@ struct DriverLoginView: View {
 
                     // Email Input
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Email")
-                            .font(.headline)
+                        Text("Email").font(.headline)
                         HStack {
                             TextField("Enter your email", text: $email)
                                 .autocapitalization(.none)
@@ -55,8 +53,7 @@ struct DriverLoginView: View {
 
                     // Password Input
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Password")
-                            .font(.headline)
+                        Text("Password").font(.headline)
                         HStack {
                             if showPassword {
                                 TextField("Enter your password", text: $password)
@@ -76,7 +73,7 @@ struct DriverLoginView: View {
                     }
                     .padding(.horizontal, 30)
 
-                    // Sign In Button (Disabled when email or password is empty)
+                    // Sign In Button
                     Button(action: {
                         authenticateUser()
                     }) {
@@ -89,34 +86,34 @@ struct DriverLoginView: View {
                             .cornerRadius(25)
                             .shadow(color: .blue.opacity(0.3), radius: 5, x: 0, y: 3)
                     }
-                    .disabled(email.isEmpty || password.isEmpty) // ✅ Disable when fields are empty
+                    .disabled(email.isEmpty || password.isEmpty)
                     .padding(.horizontal, 30)
                     .padding(.top, 5)
 
-                    // Navigation Triggered Only After Login Success
-                    NavigationLink(destination: DriverDashBoardView(), isActive: $isLoggedIn) {
-                        EmptyView()
-                    }
-                    .hidden()
+                    // Navigate to Maintenance Dashboard on Success
+                    NavigationLink(destination: MaintenanceTabBar(), isActive: $isLoggedIn) {
+                        Text("")
+                    }.hidden()
                 }
             }
 //        }
     }
 
     func authenticateUser() {
-        authViewModel.signIn(email: email, password: password, selectedRole: "driver") { success, error in
-            if success {
-                isLoggedIn = true // ✅ Navigate only when login succeeds
-            } else {
-                errorMessage = error
+        authViewModel.signIn(email: email, password: password, selectedRole: "maintenance") { success, error in
+            DispatchQueue.main.async {
+                if success {
+                    isLoggedIn = true
+                } else {
+                    errorMessage = error
+                }
             }
         }
     }
 }
 
-// Preview
-struct DriverLoginView_Previews: PreviewProvider {
+struct MaintenanceLoginView_pre: PreviewProvider {
     static var previews: some View {
-        DriverLoginView()
+        MaintenanceLoginView()
     }
 }

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct RoleSelectionView: View {
     var body: some View {
-        NavigationStack { // Use NavigationStack to handle the navigation
+        NavigationView { // Use NavigationStack to handle the navigation
             ZStack {
                 // Background Gradient
                 LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.1), Color.white]),
@@ -54,6 +54,23 @@ struct RoleSelectionView: View {
                             Image(systemName: "car.fill")
                                 .foregroundColor(.white)
                             Text("Driver")
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(.black)
+                        .cornerRadius(25)
+                        .shadow(color: .gray.opacity(0.2), radius: 5, x: 0, y: 3)
+                    }
+                    .padding(.horizontal, 30)
+                    
+                    
+                    NavigationLink(destination: MaintenanceLoginView()) {
+                        HStack {
+                            Image(systemName: "wrench.fill")
+                                .foregroundColor(.white)
+                            Text("Maintenance")
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
                         }
